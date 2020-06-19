@@ -57,5 +57,10 @@ for i in range(code_end_line-code_start_line - 1):
 insertToAt(codeBody, content, code_start_line+1)
 writeListToFile(p8File, content)
 
+# Cleaning up temp files
+# =====================================
+os.remove("_codeBody.moon")
+os.remove("_codeBody.lua")
+
 print('Lua codes injected to', p8File)
 print('Operation completed without any detected issue')
