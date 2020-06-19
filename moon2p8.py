@@ -2,6 +2,18 @@ import os
 import sys
 import re
 
+def writeListToFile(fileObj, content):
+    with open(fileObj, 'w') as file:
+        for line in content:
+            file.write(line)
+
+def printLines(lines):
+    for line in lines:
+        print(line.rstrip('\n'))
+
+def insertToAt(ls, lx, index):
+    lx[index:index] = ls
+
 inputFile = sys.argv[1]
 p8File = sys.argv[2]
 
@@ -10,25 +22,21 @@ if not os.path.isfile(inputFile):
 
     # re.search('r^',)
 
-# Using temp files to acquire the main body of the code
+# Use temp files to acquire the main body of the code
 # =====================================
-with open(inputFile, 'r') as inputFile, open('_codebody.moon', 'w') as mf:
-    for line in inputFile:
-        mf.write(line)
+with open(inputFile, 'r') as inputFile, open('_codeBody.moon', 'w') as mf:
+    mf.write(inputFile.read())
 
-os.system('moonc _codebody.moon ')
-with open('_codebody.lua', 'r') as lf:
-    codebody = lf.readlines()
+os.system('moonc _codeBody.moon')
+with open('_codeBody.lua', 'r') as lf:
+    codeBody = lf.readlines()
 
 # Strip codes in P8 file
 # =====================================
 with open(p8File, 'r') as p8f:
     content = p8f.readlines()
 
-code_start_line = 0
-code_end_line = 0
 position = 0
-
 for line in content:
     if line.rstrip('\n') == "__lua__":
         code_start_line = position
@@ -44,35 +52,10 @@ for line in content:
 for i in range(code_end_line-code_start_line - 1):
     del content[code_start_line + 1]
 
-# # debug
-# for line in content:
-#     print(line.rstrip("\n"))
-
-# Slicing to prepare for insertion
+# Final processing
 # =====================================
-heading = content[:code_start_line + 1]
-media = content[code_start_line + 1:]
-
-# # debug
-# for line in heading:
-#     print(line.rstrip("\n"))
-# print("-----------------")
-# for line in media:
-#     print(line.rstrip("\n"))
-
-# Extending to one single content variable
-fullContent = []
-fullContent.extend(heading)
-fullContent.extend(codebody)
-fullContent.extend(media)
-
-# # debug
-# for line in fullContent:
-#     print(line.rstrip("\n"))
-
-with open(p8File, 'w') as p8f:
-    for line in fullContent:
-        p8f.write(line)
+insertToAt(codeBody, content, code_start_line+1)
+writeListToFile(p8File, content)
 
 print('Lua codes injected to', p8File)
 print('Operation completed without any detected issue')
